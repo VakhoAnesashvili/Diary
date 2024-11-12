@@ -1,6 +1,10 @@
 from rest_framework import generics, permissions
 from .models import DiaryEntry
 from .serializers import DiaryEntrySerializer
+import redis
+import random #for random code
+from django.http import JsonResponse
+
 
 
 # checking diary owner
@@ -46,4 +50,18 @@ class DiaryEntryDestroyView(generics.DestroyAPIView):
 
     def get_queryset(self):
         return DiaryEntry.objects.filter(user=self.request.user)
+
+
+
+def generating_code(request):
+    code=str(random.randint(1000,9999))
+
+    redis_client= redis.StrictRedis(host='127.0.0.1',port=6379, db=1)
     
+    redis_client.setex(f"user verification code:{request.user.id}",3600,code) #saves code for 3600seconds
+    
+    return JsonResponse({
+        'message': "verification code was generated",
+        'expiration time': "1 hour"
+        'code': code
+        )}
