@@ -56,7 +56,7 @@ class DiaryEntryDestroyView(generics.DestroyAPIView):
 def generating_code(request):
     code=str(random.randint(1000,9999))
 
-    redis_client= redis.StrictRedis(host='127.0.0.1',port=6379, db=1)
+    redis_client= redis.StrictRedis(host='127.0.0.1',port=6379, db=0)
     
     redis_client.setex(f"user verification code:{request.user.id}",3600,code) #saves code for 3600seconds
     
