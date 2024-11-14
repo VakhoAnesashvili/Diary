@@ -7,11 +7,13 @@ from .serializers import RegisterSerializer, UserProfileSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import generics, permissions
+from drf_yasg.utils import swagger_auto_schema
 
 
 
 # user registration with APIView
 class RegisterView(APIView):
+    @swagger_auto_schema(request_body=RegisterSerializer)
     def post(self, request):
         # checking data validation from RegisterSerializer
         serializer = RegisterSerializer(data=request.data)
@@ -30,39 +32,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['username'] = user.username
         return token
     
-
-# user login with TokenObtainPairView
-class LoginView(TokenObtainPairView):
-    # serializer using for this API
-    serializer_class = CustomTokenObtainPairSerializer
-
-    def post(self, request, *args, **kwargs):
-        # choose JWT token for user
-        response = super().post(request, *args, **kwargs)
-        if response.status_code == status.HTTP_200_OK:
-            return Response({
-                "message": "Login successful",
-                "data": response.data
-            }, status=status.HTTP_200_OK)
-        return response
-
-
-# logout view
-class LogoutView(APIView):
-    # only authorized users could use this
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        try:
-            # give users refresh token which is needed for logout
-            refresh_token = request.data['refresh']
-            # variable for save refreshtoken from JWT
-            token = RefreshToken(refresh_token)
-            token.blacklist()
-            return Response(status=status.HTTP_205_RESET_CONTENT)
-        except Exception:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
 
 
 # user profile GET method
